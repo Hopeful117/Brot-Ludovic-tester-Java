@@ -12,7 +12,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Date;
-
+/**
+ * Unit tests for FareCalculatorService class.
+ * Tests cover fare calculation for different vehicle types and parking durations.
+ * Includes tests for edge cases such as future in-time and unknown parking types.
+ * @see FareCalculatorService
+ */
 public class FareCalculatorServiceTest {
 
     private static FareCalculatorService fareCalculatorService;

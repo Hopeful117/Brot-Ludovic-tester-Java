@@ -3,6 +3,13 @@ package com.parkit.parkingsystem.service;
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.model.Ticket;
 
+/**
+ * Service to calculate the fare of a parking ticket.
+ * The fare is calculated based on the parking type and duration.
+ * The rates are defined in the Fare class.
+ * The duration is calculated in hours.
+ * The time is provided in milliseconds.
+ */
 public class FareCalculatorService {
 
     public void calculateFare(Ticket ticket){
