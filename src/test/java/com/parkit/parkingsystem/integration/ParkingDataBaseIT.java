@@ -58,7 +58,7 @@ public class ParkingDataBaseIT {
     public void testParkingLotExit(){
         testParkingACar();
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-        parkingService.processExitingVehicle();
+        parkingService.processExitingVehicule();
         //TODO: check that the fare generated and out time are populated correctly in the database
     }
 
