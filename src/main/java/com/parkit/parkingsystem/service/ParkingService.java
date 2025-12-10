@@ -108,10 +108,17 @@ public class ParkingService {
     public void processExitingVehicule() {
         try{
             String vehicleRegNumber = getVehiculeRegNumber();
+            boolean recurrentCustomer =ticketDAO.getNbTicket(vehicleRegNumber)>1;
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();
             ticket.setOutTime(outTime);
-            fareCalculatorService.calculateFare(ticket);
+            if (recurrentCustomer) {
+                fareCalculatorService.calculateFare(ticket, true);
+            }
+            else {
+
+                fareCalculatorService.calculateFare(ticket);
+            }
             if(ticketDAO.updateTicket(ticket)) {
                 ParkingSpot parkingSpot = ticket.getParkingSpot();
                 parkingSpot.setAvailable(true);
