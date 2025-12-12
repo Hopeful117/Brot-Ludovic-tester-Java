@@ -29,7 +29,7 @@ public class InteractiveShell {
                     break;
                 }
                 case 2: {
-                    parkingService.processExitingVehicule();
+                    parkingService.processExitingVehicle();
                     break;
                 }
                 case 3: {

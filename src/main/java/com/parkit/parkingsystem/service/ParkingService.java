@@ -31,7 +31,7 @@ public class ParkingService {
         try{
             ParkingSpot parkingSpot = getNextParkingNumberIfAvailable();
             if(parkingSpot !=null && parkingSpot.getId() > 0){
-                String vehicleRegNumber = getVehiculeRegNumber();
+                String vehicleRegNumber = getVehicleRegNumber();
                 parkingSpot.setAvailable(false);
                 parkingSpotDAO.updateParking(parkingSpot);//allot this parking space and mark it's availability as false
                 boolean recurrentCustomer =ticketDAO.getNbTicket(vehicleRegNumber)>0;
@@ -62,7 +62,7 @@ public class ParkingService {
         }
     }
 
-    private String getVehiculeRegNumber() throws Exception {
+    private String getVehicleRegNumber() throws Exception {
         System.out.println("Please type the vehicle registration number and press enter key");
         return inputReaderUtil.readVehicleRegistrationNumber();
     }
@@ -71,7 +71,7 @@ public class ParkingService {
         int parkingNumber=0;
         ParkingSpot parkingSpot = null;
         try{
-            ParkingType parkingType = getVehiculeType();
+            ParkingType parkingType = getVehicleType();
             parkingNumber = parkingSpotDAO.getNextAvailableSlot(parkingType);
             if(parkingNumber > 0){
                 parkingSpot = new ParkingSpot(parkingNumber,parkingType, true);
@@ -86,7 +86,7 @@ public class ParkingService {
         return parkingSpot;
     }
 
-    private ParkingType getVehiculeType(){
+    private ParkingType getVehicleType(){
         System.out.println("Please select vehicle type from menu");
         System.out.println("1 CAR");
         System.out.println("2 BIKE");
@@ -105,9 +105,9 @@ public class ParkingService {
         }
     }
 
-    public void processExitingVehicule() {
+    public void processExitingVehicle() {
         try{
-            String vehicleRegNumber = getVehiculeRegNumber();
+            String vehicleRegNumber = getVehicleRegNumber();
             boolean recurrentCustomer =ticketDAO.getNbTicket(vehicleRegNumber)>1;
             Ticket ticket = ticketDAO.getTicket(vehicleRegNumber);
             Date outTime = new Date();

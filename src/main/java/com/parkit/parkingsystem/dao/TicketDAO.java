@@ -91,7 +91,7 @@ public class TicketDAO {
         int count = 0;
         try {
             con = dataBaseConfig.getConnection();
-            PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM ticket WHERE vehicleRegNumber = ?");
+            PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM ticket WHERE VEHICLE_REG_NUMBER = ?");
             ps.setString(1,vehicleRegNumber);
             ResultSet rs = ps.executeQuery();
 
