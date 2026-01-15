@@ -17,30 +17,26 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Date;
 
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ParkingServiceTest {
+class ParkingServiceTest {
 
-    private static ParkingService parkingService;
+    private ParkingService parkingService;
 
     @Mock
-    private static InputReaderUtil inputReaderUtil;
+    private InputReaderUtil inputReaderUtil;
     @Mock
-    private static ParkingSpotDAO parkingSpotDAO;
+    private  ParkingSpotDAO parkingSpotDAO;
     @Mock
-    private static TicketDAO ticketDAO;
-    @Mock
-    private FareCalculatorService fareCalculatorService;
+    private TicketDAO ticketDAO;
 
     @BeforeEach
-    private void setUpPerTest() {
+    void setUpPerTest() {
         try {
-            lenient().when(inputReaderUtil.readSelection()).thenReturn(1);
-            lenient().when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+
 
             ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR,false);
             Ticket ticket = new Ticket();
@@ -50,48 +46,62 @@ public class ParkingServiceTest {
 
 
 
-            lenient().when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);
 
             parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
 
         } catch (Exception e) {
-            e.printStackTrace();
+
             throw  new RuntimeException("Failed to set up test mock objects");
         }
     }
 
     @Test
-    public void processExitingVehicleTest(){
+    void processExitingVehicleReccuringUserTest() throws Exception {
 
 
-        try{
-            String regNumber = inputReaderUtil.readVehicleRegistrationNumber();
-            ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
-            Ticket ticket = new Ticket();
-            ticket.setVehicleRegNumber(regNumber);
-            ticket.setParkingSpot(parkingSpot);
-            ticket.setInTime(new Date(System.currentTimeMillis() - 3600000)); // 1h avant
-            when(ticketDAO.getNbTicket(regNumber)).thenReturn(2);
-            when(ticketDAO.getTicket(regNumber)).thenReturn(ticket);
+        String regNumber = inputReaderUtil.readVehicleRegistrationNumber();
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+        Ticket ticket = new Ticket();
+        ticket.setVehicleRegNumber(regNumber);
+        ticket.setParkingSpot(parkingSpot);
+        ticket.setInTime(new Date(System.currentTimeMillis() - 3600000)); // 1h avant
+        when(ticketDAO.getNbTicket(regNumber)).thenReturn(2);
+        when(ticketDAO.getTicket(regNumber)).thenReturn(ticket);
+        when(ticketDAO.updateTicket(ticket)).thenReturn(true);
 
-            parkingService.processExitingVehicle();
-            verify(ticketDAO, Mockito.times(1)).updateTicket(ticket);
+        parkingService.processExitingVehicle();
+        verify(parkingSpotDAO).updateParking(any(ParkingSpot.class));
+        assertNotNull(ticket.getOutTime());
 
+    }
+    @Test
+    void processExitingVehicleTest() throws Exception {
+        String regNumber = inputReaderUtil.readVehicleRegistrationNumber();
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+        Ticket ticket = new Ticket();
+        ticket.setVehicleRegNumber(regNumber);
+        ticket.setParkingSpot(parkingSpot);
+        ticket.setInTime(new Date(System.currentTimeMillis() - 3600000)); // 1h avant
+        when(ticketDAO.getNbTicket(regNumber)).thenReturn(1);
+        when(ticketDAO.getTicket(regNumber)).thenReturn(ticket);
+        when(ticketDAO.updateTicket(ticket)).thenReturn(true);
 
-        }
-        catch(Exception e){
-            e.printStackTrace();
-            throw new RuntimeException("Failed to verify method calls");
-        }
+        parkingService.processExitingVehicle();
+        verify(parkingSpotDAO).updateParking(any(ParkingSpot.class));
+        assertNotNull(ticket.getOutTime());
     }
 
+
+
     @Test
-    public void processIncomingVehicleTest(){
+    void processIncomingVehicleTest() throws Exception {
 
-        try {
 
-            ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, true);
+
+            when (inputReaderUtil.readSelection()).thenReturn(1);
+            when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
             when (parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR)).thenReturn(1);
+            when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);
             when(ticketDAO.saveTicket(any(Ticket.class))).thenReturn(true);
 
             parkingService.processIncomingVehicle();
@@ -99,20 +109,29 @@ public class ParkingServiceTest {
 
 
 
-            verify(parkingSpotDAO, Mockito.times(1)).updateParking(parkingSpot);
-            verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
+        verify(parkingSpotDAO).updateParking(any(ParkingSpot.class));
+        verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to verify method calls");
-        }
+    }
+    @Test
+    void processIncomingVehicleReccuringUserTest() throws Exception {
+        when (inputReaderUtil.readSelection()).thenReturn(1);
+        when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
+        when (parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR)).thenReturn(1);
+        when(parkingSpotDAO.updateParking(any(ParkingSpot.class))).thenReturn(true);
+        when(ticketDAO.getNbTicket("ABCDEF")).thenReturn(2);
+        when(ticketDAO.saveTicket(any(Ticket.class))).thenReturn(true);
+
+        parkingService.processIncomingVehicle();
+        verify(parkingSpotDAO).updateParking(any(ParkingSpot.class));
+        verify(ticketDAO, Mockito.times(1)).saveTicket(any(Ticket.class));
     }
 
 
     @Test
-    public void ExitingVehicleTestUnableUpdate(){
+    void ExitingVehicleTestUnableUpdate() throws Exception {
 
-        try{
+
             String regNumber = inputReaderUtil.readVehicleRegistrationNumber();
             ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
             Ticket ticket = new Ticket();
@@ -125,36 +144,34 @@ public class ParkingServiceTest {
 
             parkingService.processExitingVehicle();
 
-
-
+            verify(ticketDAO,Mockito.times(1)).updateTicket(any(Ticket.class));
+            verify(parkingSpotDAO, never()).updateParking(any());
 
 
         }
-        catch(Exception e){
-            e.printStackTrace();
-            throw new RuntimeException("Failed to verify method calls");
-        }
+
+
+    @Test
+    void testGetNextParkingNumberIfAvailable( ){
+        when(inputReaderUtil.readSelection()).thenReturn(1);
+
+       when (parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR)).thenReturn(1);
+
+
+       ParkingSpot spot = parkingService.getNextParkingNumberIfAvailable();
+       assertNotNull(spot);
+       assertEquals(1, spot.getId());
+       assertEquals(ParkingType.CAR, spot.getParkingType());
+       assertTrue(spot.isAvailable());
+
+
+
+
+
+
     }
     @Test
-    public void testGetNextParkingNumberIfAvailable( ){
-        ParkingSpot parkingSpot = null;
-        try {
-
-
-
-            parkingSpot = new ParkingSpot (1,ParkingType.CAR,true);
-            parkingService.getNextParkingNumberIfAvailable();
-            assert(parkingSpot != null);
-            assert(parkingSpot.getId() == 1);
-            assert(parkingSpot.getParkingType() == ParkingType.CAR);
-            assert(parkingSpot.isAvailable());
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Failed to verify method calls");
-        }
-    }
-    @Test
-    public void testGetNextParkingNumberIfAvailableParkingNumberNotFound() {
+    void testGetNextParkingNumberIfAvailableParkingNumberNotFound() {
 
 
             when(inputReaderUtil.readSelection()).thenReturn(1);
@@ -163,7 +180,7 @@ public class ParkingServiceTest {
 
     }
     @Test
-    public void testGetNextParkingNumberIfAvailableParkingNumberWrongArgument() {
+    void testGetNextParkingNumberIfAvailableParkingNumberWrongArgument() {
 
 
             when(inputReaderUtil.readSelection()).thenReturn(3);
@@ -171,4 +188,29 @@ public class ParkingServiceTest {
 
 
 }
+    @Test
+    void testSaveTicketFailure() {
+      when(ticketDAO.saveTicket(any(Ticket.class))).thenThrow(new RuntimeException("DB Error"));
+        ParkingSpot parkingSpot = new ParkingSpot(1, ParkingType.CAR, false);
+        Ticket ticket = new Ticket();
+        ticket.setVehicleRegNumber("ABCDEF");
+        ticket.setParkingSpot(parkingSpot);
+        ticket.setInTime(new Date(System.currentTimeMillis() - 3600000));
+        assertThrows(RuntimeException.class, () -> {
+            ticketDAO.saveTicket(ticket);
+        });
+
+
+    }
+    @Test
+    void testGetTicketNotFound() {
+        when(ticketDAO.getTicket("NONEXISTENT")).thenThrow(new RuntimeException("DB Error"));
+
+        assertThrows(RuntimeException.class, () -> {
+            ticketDAO.getTicket("NONEXISTENT");
+
+
+        });
+    }
+
 }

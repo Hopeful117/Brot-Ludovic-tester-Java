@@ -12,7 +12,11 @@ import com.parkit.parkingsystem.model.Ticket;
  * if the time is inferior to 30 min the prices should be 0
  */
 public class FareCalculatorService {
-
+    /**
+     * Calculate the fare for a given ticket.
+     * @param ticket
+     * @param discount
+     */
     public void calculateFare(Ticket ticket ,boolean discount){
         if( (ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime())) ){
             throw new IllegalArgumentException("Out time provided is incorrect:"+ticket.getOutTime().toString());
@@ -54,7 +58,10 @@ public class FareCalculatorService {
             default: throw new IllegalArgumentException("Unknown Parking Type");
         }
     }
-
+/**
+     * Calculate the fare for a given ticket without discount.
+     * @param ticket
+     */
     public void calculateFare(Ticket ticket){
         calculateFare(ticket,false);
     }

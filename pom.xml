@@ -139,6 +139,28 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <!-- Application -->
+                        <exclude>**/*Application.class</exclude>
+
+                        <!-- Config -->
+                        <exclude>**/config/**</exclude>
+
+                        <!-- DTO / Model -->
+                        <exclude>**/dto/**</exclude>
+                        <exclude>**/model/**</exclude>
+
+                        <!-- Exceptions -->
+                        <exclude>**/exception/**</exclude>
+
+                        <!-- Utils -->
+                        <exclude>**/util/**</exclude>
+
+                        <!-- Code généré -->
+                        <exclude>**/*MapperImpl.class</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </build>

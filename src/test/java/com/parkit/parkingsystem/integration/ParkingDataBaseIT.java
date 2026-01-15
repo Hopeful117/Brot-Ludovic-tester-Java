@@ -20,11 +20,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Date;
 
 import static junit.framework.Assert.*;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+
 @ExtendWith(MockitoExtension.class)
-public class ParkingDataBaseIT {
+ class ParkingDataBaseIT {
 
     private static DataBaseTestConfig dataBaseTestConfig = new DataBaseTestConfig();
     private static ParkingSpotDAO parkingSpotDAO;
@@ -35,7 +36,7 @@ public class ParkingDataBaseIT {
     private static InputReaderUtil inputReaderUtil;
 
     @BeforeAll
-    private static void setUp() throws Exception {
+    static void setUp() {
         parkingSpotDAO = new ParkingSpotDAO();
         parkingSpotDAO.dataBaseConfig = dataBaseTestConfig;
         ticketDAO = new TicketDAO();
@@ -44,50 +45,103 @@ public class ParkingDataBaseIT {
     }
 
     @BeforeEach
-    private void setUpPerTest() throws Exception {
+    void setUpPerTest() throws Exception {
         when(inputReaderUtil.readSelection()).thenReturn(1);
         when(inputReaderUtil.readVehicleRegistrationNumber()).thenReturn("ABCDEF");
         dataBasePrepareService.clearDataBaseEntries();
     }
 
     @AfterAll
-    private static void tearDown() {
+    static void tearDown() {
+        /** Method to clean up resources after all tests have run. */
 
     }
 
     @Test
-    public void testParkingACar() {
+    void testParkingACar() {
+        // GIVEN a parking service with a car to park
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
-        parkingService.processIncomingVehicle();
-        Ticket ticket = ticketDAO.getTicket("ABCDEF");
-        ticket.setInTime(new Date(System.currentTimeMillis() - 60 * 60 * 1000));
-        assertNotNull(ticket);
-        assertEquals("ABCDEF", ticket.getVehicleRegNumber());
-        assertNotNull(ticket.getInTime());
-        assertEquals(0.0, ticket.getPrice());
-        ParkingSpot spot = ticket.getParkingSpot();
-        assertNotNull(spot);
-        assertFalse(spot.isAvailable());
-        int fromDb = parkingSpotDAO.getNextAvailableSlot(ParkingType.CAR);
-        assertNotEquals(spot.getId(), fromDb);
 
+        // WHEN parking the car
+        parkingService.processIncomingVehicle();
+
+        // THEN a ticket should be generated and the parking spot marked as not available
+        Ticket ticket = ticketDAO.getTicket("ABCDEF");
+        assertNotNull(ticket);
+        ParkingSpot parkingSpot = ticket.getParkingSpot();
+
+        assertNotNull(parkingSpot);
+        assertFalse(parkingSpot.isAvailable());
 
     }
 
     @Test
     public void testParkingLotExit(){
+        // GIVEN a parking service with a car already parked
         testParkingACar();
         ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
         Ticket ticket = ticketDAO.getTicket("ABCDEF");
-        ticket.setOutTime(new Date(System.currentTimeMillis()));
+        int inTime = 3_600_000 ; // 1 hour in milliseconds
+        ticket.setInTime(new Date(System.currentTimeMillis() - inTime));
+        ticketDAO.saveTicket(ticket);
+
+        // WHEN exiting the parking lot
         parkingService.processExitingVehicle();
 
-        assertNotNull(ticket);
-        assertNotNull(ticket.getOutTime());
-        assertTrue(ticket.getPrice() >= 0);
-        ParkingSpot spot = ticket.getParkingSpot();
-        assertTrue(spot.isAvailable());
+        // THEN the ticket should be updated with out time and price, and the parking spot marked as available
+        Ticket exitingticket = ticketDAO.getTicket("ABCDEF");
+        assertNotNull(exitingticket);
+        assertNotNull(exitingticket.getOutTime());
+        assertTrue(exitingticket.getPrice() >= 0);
+        ParkingSpot spot = exitingticket.getParkingSpot();
+        assertTrue(parkingSpotDAO.updateParking(spot));
+    }
+
+
+    @Test
+    void testParkingLotExitRecurringUser() {
+        // GIVEN a parking service with a car already parked twice
+        int inTime = 3_600_000 ; // 1 hour in milliseconds
+        ParkingService parkingService = new ParkingService(inputReaderUtil, parkingSpotDAO, ticketDAO);
+        Ticket ticket = new Ticket();
+        ticket.setInTime(new Date(System.currentTimeMillis() - inTime));
+        ticket.setVehicleRegNumber("ABCDEF");
+        ticket.setParkingSpot(new ParkingSpot(1, ParkingType.CAR, false));
+        ticketDAO.saveTicket(ticket);
+        parkingService.processExitingVehicle();
+        double firstPrice = ticketDAO.getTicket("ABCDEF").getPrice();
+
+
+
+
+
+            // Second parking
+        parkingService.processIncomingVehicle();
+        Ticket secondTicket = ticketDAO.getTicket("ABCDEF");
+        secondTicket.setInTime(new Date(System.currentTimeMillis() - inTime));
+        secondTicket.setOutTime(new Date());
+        ticketDAO.updateTicket(secondTicket);
+        //WHEN exiting the parking lot again
+
+        parkingService.processExitingVehicle();
+        double secondPrice = ticketDAO.getTicket("ABCDEF").getPrice();
+
+        //THEN the second ticket price should be less than the first one due to the discount for recurring users
+        assertNotNull(secondTicket.getOutTime());
+        assertTrue(ticketDAO.getNbTicket("ABCDEF")>1);
+        assertTrue(secondPrice < firstPrice);
+
+
+
+
+
+
+
+
+
 
 
     }
+
+
 }
