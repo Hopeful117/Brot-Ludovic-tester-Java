@@ -111,16 +111,13 @@ import static org.mockito.Mockito.when;
         parkingService.processExitingVehicle();
         double firstPrice = ticketDAO.getTicket("ABCDEF").getPrice();
 
-
-
-
-
             // Second parking
         parkingService.processIncomingVehicle();
         Ticket secondTicket = ticketDAO.getTicket("ABCDEF");
         secondTicket.setInTime(new Date(System.currentTimeMillis() - inTime));
         secondTicket.setOutTime(new Date());
         ticketDAO.updateTicket(secondTicket);
+
         //WHEN exiting the parking lot again
 
         parkingService.processExitingVehicle();
@@ -131,17 +128,11 @@ import static org.mockito.Mockito.when;
         assertTrue(ticketDAO.getNbTicket("ABCDEF")>1);
         assertTrue(secondPrice < firstPrice);
 
-
-
-
-
-
-
-
-
-
-
     }
+
+
+
+
 
 
 }

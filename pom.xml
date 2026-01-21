@@ -101,6 +101,7 @@
                 <configuration>
                     <excludes>
                         <exclude>**/*IT.java</exclude>
+
                     </excludes>
                 </configuration>
                 <executions>
@@ -142,7 +143,7 @@
                 <configuration>
                     <excludes>
                         <!-- Application -->
-                        <exclude>**/*Application.class</exclude>
+                        <exclude>**/*App.class</exclude>
 
                         <!-- Config -->
                         <exclude>**/config/**</exclude>
@@ -154,8 +155,14 @@
                         <!-- Exceptions -->
                         <exclude>**/exception/**</exclude>
 
+                        <!-- Services -->
+                        <exclude>**/InteractiveShell.class</exclude>
+
                         <!-- Utils -->
                         <exclude>**/util/**</exclude>
+
+                        <!-- Constants -->
+                        <exclude>**/constants/**</exclude>
 
                         <!-- Code généré -->
                         <exclude>**/*MapperImpl.class</exclude>

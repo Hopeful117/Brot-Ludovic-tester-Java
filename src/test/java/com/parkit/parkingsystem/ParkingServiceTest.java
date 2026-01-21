@@ -200,7 +200,10 @@ class ParkingServiceTest {
         //Then verify null is returned
         assertNull(spot);
 
+
+
     }
+
     @Test
     void testGetNextParkingNumberIfAvailableParkingNumberWrongArgument() {
 
