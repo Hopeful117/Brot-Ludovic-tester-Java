@@ -43,6 +43,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>5.3.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <version>2.23.4</version>
@@ -142,30 +148,13 @@
                 </executions>
                 <configuration>
                     <excludes>
-                        <!-- Application -->
                         <exclude>**/*App.class</exclude>
-
-                        <!-- Config -->
                         <exclude>**/config/**</exclude>
-
-                        <!-- DTO / Model -->
                         <exclude>**/dto/**</exclude>
                         <exclude>**/model/**</exclude>
-
-                        <!-- Exceptions -->
                         <exclude>**/exception/**</exclude>
-
-                        <!-- Services -->
                         <exclude>**/InteractiveShell.class</exclude>
-
-                        <!-- Utils -->
-                        <exclude>**/util/**</exclude>
-
-                        <!-- Constants -->
                         <exclude>**/constants/**</exclude>
-
-                        <!-- Code généré -->
-                        <exclude>**/*MapperImpl.class</exclude>
                     </excludes>
                 </configuration>
             </plugin>

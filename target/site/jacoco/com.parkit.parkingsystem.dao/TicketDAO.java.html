@@ -38,11 +38,11 @@ import java.sql.Timestamp;
 <span class="fc" id="L38">            ps.setString(2, ticket.getVehicleRegNumber());</span>
 <span class="fc" id="L39">            ps.setDouble(3, ticket.getPrice());</span>
 <span class="fc" id="L40">            ps.setTimestamp(4, new Timestamp(ticket.getInTime().getTime()));</span>
-<span class="fc bfc" id="L41" title="All 2 branches covered.">            ps.setTimestamp(5, (ticket.getOutTime() == null)?null: (new Timestamp(ticket.getOutTime().getTime())) );</span>
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">            ps.setTimestamp(5, (ticket.getOutTime() == null)?null: (new Timestamp(ticket.getOutTime().getTime())) );</span>
 <span class="fc" id="L42">            return ps.execute();</span>
-<span class="fc" id="L43">        }catch (Exception ex){</span>
-<span class="fc" id="L44">            logger.error(&quot;Error saving ticket&quot;,ex);</span>
-<span class="fc" id="L45">            throw new RuntimeException(&quot;Error saving ticket&quot;,ex);</span>
+<span class="nc" id="L43">        }catch (Exception ex){</span>
+<span class="nc" id="L44">            logger.error(&quot;Error saving ticket&quot;,ex);</span>
+<span class="nc" id="L45">            throw new RuntimeException(&quot;Error saving ticket&quot;,ex);</span>
         }finally {
 <span class="fc" id="L47">            dataBaseConfig.closeConnection(con);</span>
 
@@ -63,7 +63,7 @@ import java.sql.Timestamp;
             //ID, PARKING_NUMBER, VEHICLE_REG_NUMBER, PRICE, IN_TIME, OUT_TIME)
 <span class="fc" id="L64">            ps.setString(1,vehicleRegNumber);</span>
 <span class="fc" id="L65">            ResultSet rs = ps.executeQuery();</span>
-<span class="fc bfc" id="L66" title="All 2 branches covered.">            if(rs.next()){</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">            if(rs.next()){</span>
 <span class="fc" id="L67">                ticket = new Ticket();</span>
 <span class="fc" id="L68">                ParkingSpot parkingSpot = new ParkingSpot(rs.getInt(1), ParkingType.valueOf(rs.getString(6)),false);</span>
 <span class="fc" id="L69">                ticket.setParkingSpot(parkingSpot);</span>
@@ -100,9 +100,9 @@ import java.sql.Timestamp;
 <span class="fc" id="L100">            ps.setInt(3,ticket.getId());</span>
 <span class="fc" id="L101">            ps.execute();</span>
 <span class="fc" id="L102">            return true;</span>
-<span class="fc" id="L103">        }catch (Exception ex){</span>
-<span class="fc" id="L104">            logger.error(&quot;Error saving ticket info&quot;,ex);</span>
-<span class="fc" id="L105">            throw new RuntimeException(&quot;Error saving ticket info&quot;,ex);</span>
+<span class="nc" id="L103">        }catch (Exception ex){</span>
+<span class="nc" id="L104">            logger.error(&quot;Error saving ticket info&quot;,ex);</span>
+<span class="nc" id="L105">            throw new RuntimeException(&quot;Error saving ticket info&quot;,ex);</span>
         }finally {
 <span class="fc" id="L107">            dataBaseConfig.closeConnection(con);</span>
         }

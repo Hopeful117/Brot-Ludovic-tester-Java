@@ -2,6 +2,8 @@ package com.parkit.parkingsystem.service;
 
 import com.parkit.parkingsystem.constants.Fare;
 import com.parkit.parkingsystem.model.Ticket;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Service to calculate the fare of a parking ticket.
@@ -14,55 +16,61 @@ import com.parkit.parkingsystem.model.Ticket;
 public class FareCalculatorService {
     /**
      * Calculate the fare for a given ticket.
+     *
      * @param ticket
      * @param discount
      */
-    public void calculateFare(Ticket ticket ,boolean discount){
-        if( (ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime())) ){
-            throw new IllegalArgumentException("Out time provided is incorrect:"+ticket.getOutTime().toString());
+    public void calculateFare(Ticket ticket, boolean discount) {
+        if ((ticket.getOutTime() == null) || (ticket.getOutTime().before(ticket.getInTime()))) {
+            throw new IllegalArgumentException("Out time provided is incorrect:" + ticket.getOutTime().toString());
         }
 
         long inHour = ticket.getInTime().getTime();
         long outHour = ticket.getOutTime().getTime();
 
 
-        float duration = (outHour  - inHour) ;
-        duration= duration / (1000 * 60 * 60); // convert milliseconds to hours
+        float duration = (outHour - inHour);
+        duration = duration / (1000 * 60 * 60); // convert milliseconds to hours
 
-        switch (ticket.getParkingSpot().getParkingType()){
+        double fare;
+
+        switch (ticket.getParkingSpot().getParkingType()) {
             case CAR: {
-                if(duration > 0.5 && !discount) {
-                    ticket.setPrice(duration * Fare.CAR_RATE_PER_HOUR);
-                }
-                else if(duration > 0.5 && discount){
-                    ticket.setPrice((duration * Fare.CAR_RATE_PER_HOUR)*0.95);
-                }
-                else{
-
-                    ticket.setPrice(0);
-                }
+                fare = Fare.CAR_RATE_PER_HOUR;
                 break;
             }
             case BIKE: {
-                if(duration > 0.5 && !discount) {
-                    ticket.setPrice(duration * Fare.BIKE_RATE_PER_HOUR);
-                }
-                else if(duration > 0.5 && discount){
-                    ticket.setPrice((duration * Fare.BIKE_RATE_PER_HOUR)*0.95);
-                }
-                else{
-                    ticket.setPrice(0);
-                }
+                fare = Fare.BIKE_RATE_PER_HOUR;
                 break;
             }
-            default: throw new IllegalArgumentException("Unknown Parking Type");
+            default:
+                throw new IllegalArgumentException("Unknown Parking Type");
         }
+
+
+
+        BigDecimal rawPrice = new BigDecimal (0);
+
+        if (duration > 0.5) {
+            rawPrice = BigDecimal.valueOf(duration * fare).setScale(2, RoundingMode.HALF_UP);
+
+            if (discount) {
+                rawPrice = rawPrice.multiply(BigDecimal.valueOf(0.95)).setScale(2, RoundingMode.HALF_UP);
+            }
+        }
+
+        double price = rawPrice.doubleValue();
+        ticket.setPrice(price);
+
+
     }
-/**
+
+    /**
      * Calculate the fare for a given ticket without discount.
+     *
      * @param ticket
      */
-    public void calculateFare(Ticket ticket){
-        calculateFare(ticket,false);
+    public void calculateFare(Ticket ticket) {
+        calculateFare(ticket, false);
     }
 }

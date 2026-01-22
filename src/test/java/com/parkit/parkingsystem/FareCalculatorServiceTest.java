@@ -5,13 +5,22 @@ import com.parkit.parkingsystem.constants.ParkingType;
 import com.parkit.parkingsystem.model.ParkingSpot;
 import com.parkit.parkingsystem.model.Ticket;
 import com.parkit.parkingsystem.service.FareCalculatorService;
+import net.bytebuddy.asm.Advice;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Date;
+import java.util.stream.Stream;
+
 /**
  * Unit tests for FareCalculatorService class.
  * Tests cover fare calculation for different vehicle types and parking durations.
@@ -33,6 +42,45 @@ class FareCalculatorServiceTest {
         ticket = new Ticket();
     }
 
+/**
+    private static Stream<Arguments> fareArgumentsProvider() {
+        return Stream.of(
+                Arguments.of(30, ParkingType.CAR, true, 0.0),
+                Arguments.of(30, ParkingType.CAR, false, 0.0),
+                Arguments.of(30, ParkingType.BIKE, true, 0.0),
+                Arguments.of(30, ParkingType.BIKE, false, 0.0),
+                Arguments.of(45, ParkingType.CAR, true, 0.75 * Fare.CAR_RATE_PER_HOUR * 0.95),
+                Arguments.of(45, ParkingType.CAR, false, 0.75 * Fare.CAR_RATE_PER_HOUR),
+                Arguments.of(45, ParkingType.BIKE, true, 0.75 * Fare.BIKE_RATE_PER_HOUR * 0.95),
+                Arguments.of(45, ParkingType.BIKE, false, 0.75 * Fare.BIKE_RATE_PER_HOUR),
+                Arguments.of(60, ParkingType.CAR, true, Fare.CAR_RATE_PER_HOUR * 0.95),
+                Arguments.of(60, ParkingType.CAR, false, Fare.CAR_RATE_PER_HOUR),
+                Arguments.of(60, ParkingType.BIKE, true, Fare.BIKE_RATE_PER_HOUR * 0.95),
+                Arguments.of(60, ParkingType.BIKE, false, Fare.BIKE_RATE_PER_HOUR),
+                Arguments.of(1440, ParkingType.CAR, true, 24 * Fare.CAR_RATE_PER_HOUR * 0.95),
+                Arguments.of(1440, ParkingType.CAR, false, 24 * Fare.CAR_RATE_PER_HOUR),
+                Arguments.of(1440, ParkingType.BIKE, true, 24 * Fare.BIKE_RATE_PER_HOUR * 0.95),
+                Arguments.of(1440, ParkingType.BIKE, false, 24 * Fare.BIKE_RATE_PER_HOUR)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("fareArgumentsProvider")
+    void calculateFare(int duration, ParkingType parkingType, boolean discount, double expectedPrice){
+        Date inTime = new Date();
+        inTime.setTime( System.currentTimeMillis() - (  duration * 60_000L) );
+        Date outTime = new Date();
+        ParkingSpot parkingSpot = new ParkingSpot(1, parkingType,false);
+
+        ticket.setInTime(inTime);
+        ticket.setOutTime(outTime);
+        ticket.setParkingSpot(parkingSpot);
+        fareCalculatorService.calculateFare(ticket, discount);
+        assertEquals(expectedPrice, ticket.getPrice(),0.01);
+    }
+
+**/
+
     @Test
     void calculateFareCar(){
         Date inTime = new Date();
@@ -44,7 +92,10 @@ class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
-        assertEquals(Fare.CAR_RATE_PER_HOUR, ticket.getPrice(),0.001);
+        BigDecimal rawExpectedFare=new BigDecimal(Fare.CAR_RATE_PER_HOUR).setScale(2, RoundingMode.HALF_UP);
+        double expectedFare=rawExpectedFare.doubleValue();
+        assertEquals(expectedFare, ticket.getPrice());
+
     }
 
     @Test
@@ -58,7 +109,9 @@ class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
-        assertEquals(Fare.BIKE_RATE_PER_HOUR, ticket.getPrice(),0.001);
+        BigDecimal rawExpectedFare=new BigDecimal(Fare.BIKE_RATE_PER_HOUR).setScale(2, RoundingMode.HALF_UP);
+        double expectedFare=rawExpectedFare.doubleValue();
+        assertEquals(expectedFare, ticket.getPrice());
     }
 
     @Test
@@ -98,7 +151,12 @@ class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
-        assertEquals((0.75 * Fare.BIKE_RATE_PER_HOUR), ticket.getPrice(),0.001 );
+        BigDecimal rawExpectedFare=new BigDecimal(Fare.BIKE_RATE_PER_HOUR).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal expectedFareBD=rawExpectedFare.multiply(new BigDecimal("0.75")).setScale(2, RoundingMode.HALF_UP);
+        double expectedFare=expectedFareBD.doubleValue();
+        assertEquals(expectedFare, ticket.getPrice());
+
+
     }
 
     @Test
@@ -112,7 +170,12 @@ class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket);
-        assertEquals( (0.75 * Fare.CAR_RATE_PER_HOUR) , ticket.getPrice(),0.001);
+        BigDecimal rawExpectedFare=new BigDecimal(Fare.CAR_RATE_PER_HOUR).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal expectedFareBD=rawExpectedFare.multiply(new BigDecimal("0.75")).setScale(2, RoundingMode.HALF_UP);
+        double expectedFare=expectedFareBD.doubleValue();
+        assertEquals(expectedFare, ticket.getPrice());
+
+
     }
 
     @Test
@@ -166,7 +229,11 @@ class FareCalculatorServiceTest {
         ticket.setOutTime(outTime);
         ticket.setParkingSpot(parkingSpot);
         fareCalculatorService.calculateFare(ticket,true);
-        assertEquals( Fare.CAR_RATE_PER_HOUR * 0.95 , ticket.getPrice());
+        BigDecimal rawExpectedFare=new BigDecimal((Fare.CAR_RATE_PER_HOUR)).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal discountedFare=rawExpectedFare.multiply(new BigDecimal("0.95")).setScale(2, RoundingMode.HALF_UP);
+        double expectedFare=discountedFare.doubleValue();
+        assertEquals(expectedFare, ticket.getPrice());
+
 
 
     }
