@@ -12,13 +12,21 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-
+/**
+ * Data Access Object (DAO) class for managing ticket data in the database.
+ * Provides methods to save, retrieve, and update ticket information.
+ */
 public class TicketDAO {
 
     private static final Logger logger = LogManager.getLogger("TicketDAO");
 
     public DataBaseConfig dataBaseConfig = new DataBaseConfig();
-
+/**
+     * Saves a ticket to the database.
+     *
+     * @param ticket The Ticket object to be saved.
+     * @return true if the ticket was saved successfully, false otherwise.
+     */
     public boolean saveTicket(Ticket ticket){
         Connection con = null;
         try {
@@ -33,13 +41,19 @@ public class TicketDAO {
             ps.setTimestamp(5, (ticket.getOutTime() == null)?null: (new Timestamp(ticket.getOutTime().getTime())) );
             return ps.execute();
         }catch (Exception ex){
-            logger.error("Error fetching next available slot",ex);
+            logger.error("Error saving ticket",ex);
+            throw new RuntimeException("Error saving ticket",ex);
         }finally {
             dataBaseConfig.closeConnection(con);
-            return false;
+
         }
     }
-
+/**
+     * Retrieves a ticket from the database based on the vehicle registration number.
+     *
+     * @param vehicleRegNumber The vehicle registration number.
+     * @return The Ticket object if found, null otherwise.
+     */
     public Ticket getTicket(String vehicleRegNumber) {
         Connection con = null;
         Ticket ticket = null;
@@ -62,13 +76,20 @@ public class TicketDAO {
             dataBaseConfig.closeResultSet(rs);
             dataBaseConfig.closePreparedStatement(ps);
         }catch (Exception ex){
-            logger.error("Error fetching next available slot",ex);
+            logger.error("Error retrieving ticket",ex);
+            throw new RuntimeException("Error retrieving ticket",ex);
         }finally {
             dataBaseConfig.closeConnection(con);
-            return ticket;
-        }
-    }
 
+        }
+        return ticket;
+    }
+/**
+     * Updates an existing ticket in the database.
+     *
+     * @param ticket The Ticket object with updated information.
+     * @return true if the ticket was updated successfully, false otherwise.
+     */
     public boolean updateTicket(Ticket ticket) {
         Connection con = null;
         try {
@@ -81,9 +102,44 @@ public class TicketDAO {
             return true;
         }catch (Exception ex){
             logger.error("Error saving ticket info",ex);
+            throw new RuntimeException("Error saving ticket info",ex);
         }finally {
             dataBaseConfig.closeConnection(con);
         }
-        return false;
+    }
+    /**
+     * Retrieves the number of tickets associated with a specific vehicle registration number.
+     *
+     * @param vehicleRegNumber The vehicle registration number.
+     * @return The count of tickets for the given vehicle registration number.
+     */
+    public int getNbTicket(String vehicleRegNumber ){
+        Connection con = null;
+
+        int count = 0;
+        try {
+            con = dataBaseConfig.getConnection();
+            PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM ticket WHERE VEHICLE_REG_NUMBER = ?");
+            ps.setString(1,vehicleRegNumber);
+            ResultSet rs = ps.executeQuery();
+
+            if(rs.next()){
+                count=rs.getInt(1);
+            }
+
+
+
+        }
+        catch (Exception ex){
+            logger.error("Error fetching query",ex);
+            throw new RuntimeException("Error fetching query",ex);
+        }finally {
+            dataBaseConfig.closeConnection(con);
+
+        }
+        return count;
+
+
+
     }
 }
